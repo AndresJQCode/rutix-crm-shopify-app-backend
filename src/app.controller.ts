@@ -1,4 +1,4 @@
-import { Controller, Get, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { AppService } from './app.service';
 import '@shopify/shopify-api/adapters/node';
 import {
@@ -11,6 +11,7 @@ import {
 } from '@shopify/shopify-api';
 import { FutureFlags } from '@shopify/shopify-api/dist/ts/future/flags';
 import { v4 as uuidv4 } from 'uuid';
+import { OauthShopifyCallbackDto } from './dto/oauth-shopify-callback.dto';
 
 @Controller()
 export class AppController {
@@ -95,5 +96,12 @@ export class AppController {
     }
 
     res.redirect(`http://localhost:3000/sesion=${sessionId}`);
+  }
+
+  @Post('/oauth/shopify/callback')
+  async oauthShopifyCallback(@Body() body: OauthShopifyCallbackDto) {
+    console.log('body', body);
+
+    return body;
   }
 }
