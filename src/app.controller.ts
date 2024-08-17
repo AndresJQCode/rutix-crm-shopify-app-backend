@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Inject, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  InternalServerErrorException,
+  Post,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { AppService } from './app.service';
 import '@shopify/shopify-api/adapters/node';
 import {
@@ -8,7 +17,6 @@ import {
   Shopify,
   ShopifyRestResources,
   DeliveryMethod,
-  RequestedTokenType,
 } from '@shopify/shopify-api';
 import { FutureFlags } from '@shopify/shopify-api/dist/ts/future/flags';
 import { v4 as uuidv4 } from 'uuid';
@@ -74,6 +82,7 @@ export class AppController {
       accessToken: callbackResponse.session.accessToken,
     });
 
+    const url = this.configService.backendUrl;
     // create webhooks
     // Add handlers for the events you want to subscribe to. You don't need a callback if you're just using `validate`
     this.shopify.webhooks.addHandlers({
@@ -82,50 +91,6 @@ export class AppController {
         callbackUrl: '/webhooks',
         callback: async (topic, shop_domain) => console.log(topic, shop_domain),
       },
-      ORDERS_CREATE: [
-        {
-          deliveryMethod: DeliveryMethod.Http,
-          callbackUrl: 'https://bu.com/webhooks',
-        },
-      ],
-    });
-    const response = await this.shopify.webhooks.register({
-      session: callbackResponse.session,
-    });
-
-    if (!response['ORDERS_CREATE'] || !response['ORDERS_CREATE'][0]?.success) {
-      const msg = `Failed to register ORDER_CREATE webhook`;
-      console.log(msg);
-    }
-
-    res.redirect(
-      `${this.configService.dropflowUrl}/registro_usuario?code=${internalCode}&shop_url=${callbackResponse.session.shop}`,
-    );
-  }
-
-  @Post('/oauth/shopify/callback')
-  async oauthShopifyCallback(@Body() body: OauthShopifyCallbackDto) {
-    const accessToken = await this.getAccessToken(body);
-
-    return accessToken;
-  }
-
-  async getAccessToken(shopifyQuery: OauthShopifyCallbackDto): Promise<string> {
-    const { code, shop } = shopifyQuery;
-
-    const shopifyClient = this.shopify;
-
-    if (!shopifyClient) return;
-
-    const { session } = await shopifyClient.auth.tokenExchange({
-      shop: shop,
-      sessionToken: code,
-      requestedTokenType: RequestedTokenType.OfflineAccessToken,
-    });
-
-    const url = this.configService.backendUrl;
-
-    this.shopify.webhooks.addHandlers({
       ORDERS_CREATE: [
         {
           deliveryMethod: DeliveryMethod.Http,
@@ -146,7 +111,7 @@ export class AppController {
       ],
     });
     const response = await this.shopify.webhooks.register({
-      session,
+      session: callbackResponse.session,
     });
 
     if (!response['ORDERS_CREATE'] || !response['ORDERS_CREATE'][0]?.success) {
@@ -154,14 +119,23 @@ export class AppController {
       console.log(msg);
     }
 
-    if (
-      !response['ORDERS_UPDATED'] ||
-      !response['ORDERS_UPDATED'][0]?.success
-    ) {
-      const msg = `Failed to register ORDERS_UPDATED webhook`;
-      console.log(msg);
+    res.redirect(
+      `${this.configService.dropflowUrl}/registro_usuario?code=${internalCode}&shop_url=${callbackResponse.session.shop}`,
+    );
+  }
+
+  @Post('exchange-internal-code')
+  async oauthShopifyCallback(@Body() body: OauthShopifyCallbackDto) {
+    const { shop, code } = body;
+
+    const findAccessTokenByShop = this.sessions.get(shop);
+
+    if (findAccessTokenByShop.internalCode === code) {
+      return {
+        accessToken: findAccessTokenByShop.accessToken,
+      };
     }
 
-    return session.accessToken;
+    throw new InternalServerErrorException('Error al encontrar la tienda');
   }
 }
