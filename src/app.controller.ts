@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post, Req, Res } from '@nestjs/common';
 import { AppService } from './app.service';
 import '@shopify/shopify-api/adapters/node';
 import {
@@ -8,10 +8,13 @@ import {
   Shopify,
   ShopifyRestResources,
   DeliveryMethod,
+  RequestedTokenType,
 } from '@shopify/shopify-api';
 import { FutureFlags } from '@shopify/shopify-api/dist/ts/future/flags';
 import { v4 as uuidv4 } from 'uuid';
 import { OauthShopifyCallbackDto } from './dto/oauth-shopify-callback.dto';
+import configurations from './core/config/configuration';
+import { ConfigType } from '@nestjs/config';
 
 @Controller()
 export class AppController {
@@ -23,10 +26,14 @@ export class AppController {
 
   sessions = new Map<string, { sessionId: string; accessToken: string }>();
 
-  constructor(private readonly appService: AppService) {
+  constructor(
+    private readonly appService: AppService,
+    @Inject(configurations.KEY)
+    private readonly configService: ConfigType<typeof configurations>,
+  ) {
     const shopifyInstance = shopifyApi({
-      apiKey: '46559f7f9cec7c5de3ed6918a4aeec6e',
-      apiSecretKey: '56e751b8b67622a3fabd1c1c7de697ff',
+      apiKey: this.configService.apiKey,
+      apiSecretKey: this.configService.apiSecretKey,
       scopes: ['write_products,write_orders'],
       hostName: 'tunnel.lulochat.com',
       apiVersion: ApiVersion.July24,
@@ -100,8 +107,57 @@ export class AppController {
 
   @Post('/oauth/shopify/callback')
   async oauthShopifyCallback(@Body() body: OauthShopifyCallbackDto) {
-    console.log('body', body);
+    const accessToken = await this.getAccessToken(body);
 
-    return body;
+    return accessToken;
+  }
+
+  async getAccessToken(shopifyQuery: OauthShopifyCallbackDto): Promise<string> {
+    const { code, shop } = shopifyQuery;
+
+    const shopifyClient = this.shopify;
+
+    if (!shopifyClient) return;
+
+    const { session } = await shopifyClient.auth.tokenExchange({
+      shop: shop,
+      sessionToken: code,
+      requestedTokenType: RequestedTokenType.OfflineAccessToken,
+    });
+
+    const url = this.configService.backendUrl;
+
+    this.shopify.webhooks.addHandlers({
+      ORDERS_CREATE: [
+        {
+          deliveryMethod: DeliveryMethod.Http,
+          callbackUrl: `${url}/webhooks`,
+        },
+      ],
+      ORDERS_UPDATED: [
+        {
+          deliveryMethod: DeliveryMethod.Http,
+          callbackUrl: `${url}/webhooks`,
+        },
+      ],
+    });
+    const response = await this.shopify.webhooks.register({
+      session,
+    });
+
+    if (!response['ORDERS_CREATE'] || !response['ORDERS_CREATE'][0]?.success) {
+      const msg = `Failed to register ORDER_CREATE webhook`;
+      console.log(msg);
+    }
+
+    if (
+      !response['ORDERS_UPDATED'] ||
+      !response['ORDERS_UPDATED'][0]?.success
+    ) {
+      const msg = `Failed to register ORDERS_UPDATED webhook`;
+      console.log(msg);
+    }
+
+    return session.accessToken;
   }
 }
