@@ -24,7 +24,7 @@ export class AppController {
     FutureFlags
   > | null = null;
 
-  sessions = new Map<string, { sessionId: string; accessToken: string }>();
+  sessions = new Map<string, { internalCode: string; accessToken: string }>();
 
   constructor(
     private readonly appService: AppService,
@@ -68,15 +68,11 @@ export class AppController {
       rawResponse: res,
     });
 
-    const sessionId = uuidv4();
+    const internalCode = uuidv4();
     this.sessions.set(callbackResponse.session.shop, {
-      sessionId,
+      internalCode,
       accessToken: callbackResponse.session.accessToken,
     });
-
-    // save accessToken in db
-
-    // generate jwt token
 
     // create webhooks
     // Add handlers for the events you want to subscribe to. You don't need a callback if you're just using `validate`
@@ -102,7 +98,9 @@ export class AppController {
       console.log(msg);
     }
 
-    res.redirect(`http://localhost:3000/sesion=${sessionId}`);
+    res.redirect(
+      `${this.configService.dropflowUrl}/registro_usuario?code=${internalCode}&shop_url=${callbackResponse.session.shop}`,
+    );
   }
 
   @Post('/oauth/shopify/callback')
