@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dropflow-backend
+  namespace: dropflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dropflow-backend
+  template:
+    metadata:
+      labels:
+        app: dropflow-backend
+      annotations:
+        force-recreate: "1" # Add or update this annotation to trigger a rolling update
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: admin
+          image: index.docker.io/qcodeco/dropflow-backend:TAG
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3004
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: dropflow-backend-config
