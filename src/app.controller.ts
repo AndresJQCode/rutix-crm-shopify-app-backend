@@ -140,6 +140,12 @@ export class AppController {
           callbackUrl: `${url}/webhooks`,
         },
       ],
+      CHECKOUTS_UPDATE: [
+        {
+          deliveryMethod: DeliveryMethod.Http,
+          callbackUrl: `${url}/webhooks`,
+        },
+      ],
     });
     const response = await this.shopify.webhooks.register({
       session,

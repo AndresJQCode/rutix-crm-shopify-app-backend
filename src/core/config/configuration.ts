@@ -5,6 +5,7 @@ export interface IConfig {
   backendUrl: string;
   apiKey: string;
   apiSecretKey: string;
+  dropflowUrl: string;
 }
 
 const configurations = registerAs(
@@ -13,6 +14,7 @@ const configurations = registerAs(
     backendUrl: process.env.BACKEND_URL,
     apiKey: process.env.API_KEY,
     apiSecretKey: process.env.API_SECRET_KEY,
+    dropflowUrl: process.env.DROPFLOW_URL,
   }),
 );
 
@@ -26,6 +28,7 @@ export function configRoot(): ConfigModuleOptions {
       BACKEND_URL: Joi.string().required(),
       API_KEY: Joi.string().required(),
       API_SECRET_KEY: Joi.string().required(),
+      DROPFLOW_URL: Joi.string().required(),
     }),
   };
 }
