@@ -61,7 +61,7 @@ export class AppController {
     // https://tunnel.lulochat.com/auth?shop=test-qcode-2.myshopify.com
     await this.shopify.auth.begin({
       shop: this.shopify.utils.sanitizeShop(req.query.shop, true),
-      callbackPath: `/auth/callback`,
+      callbackPath: `${this.configService.backendUrl}/auth/callback`,
       isOnline: false,
       rawRequest: req,
       rawResponse: res,
