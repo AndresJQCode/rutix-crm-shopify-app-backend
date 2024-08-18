@@ -144,16 +144,26 @@ export class AppController {
   @Post('webhooks')
   async webhooks(
     @Body() body,
-    @Headers('x-shop') shop,
+    @Headers('x-shopify-topic') topic,
+    @Headers('x-shopify-shop-domain') shopDomain,
     @Headers('X-Shopify-Hmac-SHA256') hmac,
-    @Req() req,
+    @Headers('X-Shopify-Webhook-Id') webhookId,
+    @Headers('X-Shopify-Api-Version') apiVersion,
   ) {
-    console.log('shop', shop);
+    console.log('-----------------');
+    console.log('shop', shopDomain);
     console.log('hmac', hmac);
+    console.log('webhookId', webhookId);
+    console.log('apiVersion', apiVersion);
+    console.log('topic', topic);
+
+    // rawBody is the raw request body string
+    const rawBody = JSON.stringify(body);
+    console.log('rawBody', rawBody);
 
     const isValidSign = verifyWebhook(
       hmac,
-      req.body,
+      rawBody,
       this.configService.apiSecretKey,
     );
     console.log('isValidSign', isValidSign);
