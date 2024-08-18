@@ -1,9 +1,9 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
   Inject,
-  InternalServerErrorException,
   Post,
   Req,
   Res,
@@ -58,7 +58,6 @@ export class AppController {
 
   @Get('auth')
   async getAuth(@Req() req, @Res() res) {
-    // https://tunnel.lulochat.com/auth?shop=test-qcode-2.myshopify.com
     await this.shopify.auth.begin({
       shop: this.shopify.utils.sanitizeShop(req.query.shop, true),
       callbackPath: `/auth/callback`,
@@ -136,6 +135,12 @@ export class AppController {
       };
     }
 
-    throw new InternalServerErrorException('Error al encontrar la tienda');
+    throw new BadRequestException('Error al encontrar la tienda');
+  }
+
+  @Post('webhooks')
+  async webhooks(@Body() body) {
+    console.log(body);
+    return;
   }
 }

@@ -8,8 +8,4 @@ export class OauthShopifyCallbackDto {
   @IsNotEmpty()
   @IsString()
   shop: string;
-
-  @IsNotEmpty()
-  @IsString()
-  token: string;
 }
