@@ -7,6 +7,7 @@ import {
   Post,
   Req,
   Res,
+  Headers,
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import '@shopify/shopify-api/adapters/node';
@@ -23,6 +24,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { OauthShopifyCallbackDto } from './dto/oauth-shopify-callback.dto';
 import configurations from './core/config/configuration';
 import { ConfigType } from '@nestjs/config';
+import verifyWebhook from './utilities/verify-webhook';
+import Session from './models/session.type';
 
 @Controller()
 export class AppController {
@@ -32,7 +35,7 @@ export class AppController {
     FutureFlags
   > | null = null;
 
-  sessions = new Map<string, { internalCode: string; accessToken: string }>();
+  sessions = new Map<string, Session>();
 
   constructor(
     private readonly appService: AppService,
@@ -113,7 +116,7 @@ export class AppController {
       session: callbackResponse.session,
     });
 
-    if (!response['ORDERS_CREATE'] || !response['ORDERS_CREATE'][0]?.success) {
+    if (!response?.['ORDERS_CREATE']?.[0]?.success) {
       const msg = `Failed to register ORDER_CREATE webhook`;
       console.log(msg);
     }
@@ -135,11 +138,26 @@ export class AppController {
       };
     }
 
-    throw new BadRequestException('Error al encontrar la tienda');
+    throw new BadRequestException('Código inválido');
   }
 
   @Post('webhooks')
-  async webhooks(@Body() body) {
+  async webhooks(
+    @Body() body,
+    @Headers('x-shop') shop,
+    @Headers('X-Shopify-Hmac-SHA256') hmac,
+    @Req() req,
+  ) {
+    console.log('shop', shop);
+    console.log('hmac', hmac);
+
+    const isValidSign = verifyWebhook(
+      hmac,
+      req.body,
+      this.configService.apiSecretKey,
+    );
+    console.log('isValidSign', isValidSign);
+
     console.log(body);
     return;
   }
