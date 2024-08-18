@@ -82,7 +82,7 @@ export class AppController {
       accessToken: callbackResponse.session.accessToken,
     });
 
-    const url = this.configService.backendUrl;
+    const url = `https://${this.configService.backendUrl}`;
     // create webhooks
     // Add handlers for the events you want to subscribe to. You don't need a callback if you're just using `validate`
     this.shopify.webhooks.addHandlers({
