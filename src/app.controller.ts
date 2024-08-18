@@ -176,10 +176,15 @@ export class AppController {
       return;
     }
 
-    if (topic === 'orders/create' || topic === 'checkouts/update') {
+    if (topic === 'orders/create' || topic === 'orders/update') {
       try {
         const responseOrderCreated = await axios.post(
           'https://api.dropxflow.com/shopify/orders/create',
+          {
+            shopDomain,
+            webhookId,
+            order: body,
+          },
         );
         console.log('responseOrderCreated', responseOrderCreated.data);
       } catch (error) {
@@ -191,6 +196,11 @@ export class AppController {
       try {
         const responseCheckoutUpdate = await axios.post(
           'api.dropxflow.com/shopify/orders/abandoned/create',
+          {
+            shopDomain,
+            webhookId,
+            checkout: body,
+          },
         );
         console.log('responseCheckoutUpdate', responseCheckoutUpdate.data);
       } catch (error) {
