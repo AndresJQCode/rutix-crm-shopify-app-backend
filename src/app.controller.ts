@@ -125,7 +125,7 @@ export class AppController {
     }
 
     res.redirect(
-      `${this.configService.dropflowUrl}/registro_usuario?code=${internalCode}&shop_url=${callbackResponse.session.shop}`,
+      `${this.configService.dropflowUrl}/inicio_de_sesion?code=${internalCode}&shop_url=${callbackResponse.session.shop}`,
     );
   }
 
