@@ -43,7 +43,7 @@ export class AppController {
       apiKey: this.configService.apiKey,
       apiSecretKey: this.configService.apiSecretKey,
       scopes: ['write_products,write_orders'],
-      hostName: 'tunnel.lulochat.com',
+      hostName: this.configService.backendUrl,
       apiVersion: ApiVersion.July24,
       isEmbeddedApp: false,
       accessMode: 'offline',
@@ -61,7 +61,7 @@ export class AppController {
     // https://tunnel.lulochat.com/auth?shop=test-qcode-2.myshopify.com
     await this.shopify.auth.begin({
       shop: this.shopify.utils.sanitizeShop(req.query.shop, true),
-      callbackPath: `${this.configService.backendUrl}/auth/callback`,
+      callbackPath: `/auth/callback`,
       isOnline: false,
       rawRequest: req,
       rawResponse: res,
