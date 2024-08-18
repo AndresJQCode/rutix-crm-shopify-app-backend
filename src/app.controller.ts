@@ -26,6 +26,7 @@ import configurations from './core/config/configuration';
 import { ConfigType } from '@nestjs/config';
 import verifyWebhook from './utilities/verify-webhook';
 import Session from './models/session.type';
+import axios from 'axios';
 
 @Controller()
 export class AppController {
@@ -170,6 +171,32 @@ export class AppController {
     );
     console.log('isValidSign', isValidSign);
 
+    if (!isValidSign) {
+      console.log('Invalid sign');
+      return;
+    }
+
+    if (topic === 'orders/create' || topic === 'checkouts/update') {
+      try {
+        const responseOrderCreated = await axios.post(
+          'https://api.dropxflow.com/shopify/orders/create',
+        );
+        console.log('responseOrderCreated', responseOrderCreated.data);
+      } catch (error) {
+        console.log('error', error);
+      }
+    }
+
+    if (topic === 'checkouts/update') {
+      try {
+        const responseCheckoutUpdate = await axios.post(
+          'api.dropxflow.com/shopify/orders/abandoned/create',
+        );
+        console.log('responseCheckoutUpdate', responseCheckoutUpdate.data);
+      } catch (error) {
+        console.log('error', error);
+      }
+    }
     console.log(body);
     return;
   }
