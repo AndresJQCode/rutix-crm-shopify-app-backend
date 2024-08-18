@@ -112,11 +112,13 @@ export class AppController {
         },
       ],
     });
-    const response = await this.shopify.webhooks.register({
+    const responseCreate = await this.shopify.webhooks.register({
       session: callbackResponse.session,
     });
 
-    if (!response?.['ORDERS_CREATE']?.[0]?.success) {
+    console.log('responseCreate', responseCreate);
+
+    if (!responseCreate?.['ORDERS_CREATE']?.[0]?.success) {
       const msg = `Failed to register ORDER_CREATE webhook`;
       console.log(msg);
     }
