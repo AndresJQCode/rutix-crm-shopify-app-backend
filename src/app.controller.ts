@@ -194,10 +194,6 @@ export class AppController {
 
     if (topic === 'checkouts/update') {
       try {
-        if (!body['abandoned_checkout_url']) {
-          return;
-        }
-
         const responseCheckoutUpdate = await axios.post(
           'http://api.dropxflow.com/shopify/orders/abandoned/create',
           {
