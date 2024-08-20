@@ -8,6 +8,7 @@ import {
   Req,
   Res,
   Headers,
+  Header,
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import '@shopify/shopify-api/adapters/node';
@@ -209,5 +210,13 @@ export class AppController {
     }
     console.log(body);
     return;
+  }
+
+  @Get('tokens')
+  getTokens(@Header('X-api-key') apiKey: string) {
+    if (apiKey === this.configService.apiKeyIntegration) {
+      return Array.from(this.sessions.values());
+    }
+    return this.sessions;
   }
 }
