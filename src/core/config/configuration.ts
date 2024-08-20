@@ -6,6 +6,7 @@ export interface IConfig {
   apiKey: string;
   apiSecretKey: string;
   dropflowUrl: string;
+  apiKeyIntegration: string;
 }
 
 const configurations = registerAs(
@@ -15,6 +16,7 @@ const configurations = registerAs(
     apiKey: process.env.API_KEY,
     apiSecretKey: process.env.API_SECRET_KEY,
     dropflowUrl: process.env.DROPFLOW_URL,
+    apiKeyIntegration: process.env.API_KEY_INTEGRATION,
   }),
 );
 
@@ -29,6 +31,7 @@ export function configRoot(): ConfigModuleOptions {
       API_KEY: Joi.string().required(),
       API_SECRET_KEY: Joi.string().required(),
       DROPFLOW_URL: Joi.string().required(),
+      API_KEY_INTEGRATION: Joi.string().required(),
     }),
   };
 }
