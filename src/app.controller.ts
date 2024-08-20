@@ -216,6 +216,5 @@ export class AppController {
     if (apiKey === this.configService.apiKeyIntegration) {
       return Array.from(this.sessions.values());
     }
-    return this.sessions;
   }
 }
