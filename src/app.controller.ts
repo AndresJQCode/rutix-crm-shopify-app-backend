@@ -179,7 +179,7 @@ export class AppController {
     if (topic === 'orders/create' || topic === 'orders/update') {
       try {
         const responseOrderCreated = await axios.post(
-          'https://api.dropxflow.com/shopify/orders/create',
+          'http://api.dropxflow.com/shopify/orders/create',
           {
             shopDomain,
             webhookId,
@@ -195,7 +195,7 @@ export class AppController {
     if (topic === 'checkouts/update') {
       try {
         const responseCheckoutUpdate = await axios.post(
-          'https://api.dropxflow.com/shopify/orders/abandoned/create',
+          'http://api.dropxflow.com/shopify/orders/abandoned/create',
           {
             shopDomain,
             webhookId,
