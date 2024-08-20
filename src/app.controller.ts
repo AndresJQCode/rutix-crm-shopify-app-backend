@@ -188,7 +188,8 @@ export class AppController {
         );
         console.log('responseOrderCreated', responseOrderCreated.data);
       } catch (error) {
-        console.log('error', error);
+        console.log(`error ${topic}:`, error.response?.data);
+        throw new BadRequestException('Error al enviar el webhook');
       }
     }
 
@@ -204,17 +205,11 @@ export class AppController {
         );
         console.log('responseCheckoutUpdate', responseCheckoutUpdate.data);
       } catch (error) {
-        console.log('error', error);
+        console.log(`error ${topic}:`, error.response?.data);
+        throw new BadRequestException('Error al enviar el webhook');
       }
     }
     console.log(body);
     return;
-  }
-
-  @Get('tokens')
-  getTokens(@Headers('X-api-key') apiKey: string) {
-    if (apiKey === this.configService.apiKeyIntegration) {
-      return Array.from(this.sessions.values());
-    }
   }
 }
