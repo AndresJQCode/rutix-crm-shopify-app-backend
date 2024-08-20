@@ -106,7 +106,7 @@ export class AppController {
           callbackUrl: `${url}/webhooks`,
         },
       ],
-      CHECKOUTS_UPDATE: [
+      DRAFT_ORDERS_CREATE: [
         {
           deliveryMethod: DeliveryMethod.Http,
           callbackUrl: `${url}/webhooks`,
@@ -192,7 +192,7 @@ export class AppController {
       }
     }
 
-    if (topic === 'checkouts/update') {
+    if (topic === 'draft_orders/create') {
       try {
         const responseCheckoutUpdate = await axios.post(
           'http://api.dropxflow.com/shopify/orders/abandoned/create',
